@@ -1,9 +1,8 @@
-AWS-Terraform-Docker-install
-###
+# AWS-Terraform-Docker-install
+
 ***
 
-Terraform install
-#
+## Terraform install (Ubuntu)
 **
 ```
 wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -11,6 +10,7 @@ echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://
 sudo apt update && sudo apt install terraform
 ```
 
+## Terraform Start
 ``` Hcl
 $ terraform init
 $ terraform plan
