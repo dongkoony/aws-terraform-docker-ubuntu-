@@ -1,10 +1,12 @@
 # AWS-Terraform-Docker-install
 
-## Terraform을 이용한 AWS EC2 서비스 내 도커 및 젠킨스 컨테이너 풀 IaC
+## Terraform을 이용한 AWS EC2 서비스 내 도커 및 젠킨스 컨테이너 Pull IaC
 ```
 Terraform version : 1.5.0
 aws-cli version : 2.12.3
 python version : 3.11.4
+Jenkins Container : latest
+Docker : latest
 ```
 
 ## AWS CLI Install
