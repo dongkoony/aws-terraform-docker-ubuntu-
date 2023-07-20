@@ -1,7 +1,7 @@
 # AWS-Terraform-Docker-install
 
 ## AWS CLI
-# Linux Install
+### Linux Install
 ```
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
