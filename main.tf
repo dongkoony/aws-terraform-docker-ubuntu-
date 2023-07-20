@@ -1,46 +1,42 @@
 # AWS Provider 설정
 provider "aws" {
-  region = "ap-northeast-2" # 사용하는 리전으로 변경
+  region = var.region
 }
 
 # 보안 그룹 생성
 resource "aws_security_group" "kubernetes_security_group" {
   name_prefix = "kubernetes-security-group"
-  vpc_id      = "vpc-0d34cb0a905197a86" # 사용하는 VPC ID로 대체
+  vpc_id      = var.vpc_id
 
-  # SSH 트래픽 허용
+  # SSH, 도커 포트, 쿠버네티스 포트, 젠킨스 포트 허용
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # SSH를 모든 IP 주소에서 허용하려면 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # 도커 포트 허용 (도커 데몬이 2375 포트를 사용)
   ingress {
     from_port   = 2375
     to_port     = 2375
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # 모든 IP 주소에서 도커 포트 허용
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # 쿠버네티스 마스터, 노드간 통신 허용 (포트 번호는 구성에 따라 달라질 수 있음)
   ingress {
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # 모든 IP 주소에서 쿠버네티스 마스터, 노드 통신 허용
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # 젠킨스 포트 허용 (젠킨스 웹 인터페이스가 8080 포트를 사용)
   ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # 모든 IP 주소에서 젠킨스 포트 허용
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # 모든 아웃바운드 트래픽 허용
   egress {
     from_port   = 0
     to_port     = 0
@@ -51,44 +47,55 @@ resource "aws_security_group" "kubernetes_security_group" {
 
 # 서브넷 생성
 resource "aws_subnet" "kubernetes_subnet" {
-  vpc_id            = "vpc-0d34cb0a905197a86" # 사용하는 VPC ID로 대체
-  cidr_block        = "172.31.64.0/20" # 다른 CIDR 블록으로 변경
-  availability_zone = "ap-northeast-2a"
+  vpc_id            = var.vpc_id
+  cidr_block        = var.subnet_cidr_block
+  availability_zone = var.availability_zone
 }
 
 # EC2 마스터 인스턴스 생성
 resource "aws_instance" "ec2_instance_master" {
-  ami           = "ami-0c9c942bd7bf113a2" # ubuntu 22.04 ami
-  instance_type = "t3.medium"
-  key_name      = "Kubectl" # 사용하는 키 페어 이름으로 대체
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name # aws에서 발급 받은 pem key name
   subnet_id     = aws_subnet.kubernetes_subnet.id
   vpc_security_group_ids = [aws_security_group.kubernetes_security_group.id]
-  associate_public_ip_address = true # 퍼블릭 IP를 할당
+  associate_public_ip_address = true
 
   tags = {
     Name = "k8s-master"
   }
 
-  # ec2 인스턴스 생성 후 ssh 자동 접속
   connection {
     type        = "ssh"
-    user        = "ubuntu" # 원격 인스턴스의 사용자 이름 (예: Ubuntu AMI를 사용하는 경우)
-    private_key = file("/Users/donghyeonshin/Desktop/pem_key/Kubectl.pem") # AWS에서 발급한 PEM 키 파일의 경로
-    host        = self.public_ip # 인스턴스가 생성된 후에 퍼블릭 IP 주소로 자동으로 채워집니다.
+    user        = "ubuntu"
+    private_key = file(var.public_key_path) # aws에서 발급 받은 pem key 저장 디렉토리
+    host        = self.public_ip
   }
 
-  # docker와 jenkins install
   provisioner "remote-exec" {
     inline = [
+      # Local time
+      # "sudo -i",
+      "sudo rm -f /etc/localtime",
+      "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
+      # "exit",
+      
+      # docker install
+      
       "sudo apt-get update",
       "sudo apt-get install -y docker.io",
-      "sudo systemctl enable --now docker"
+      "sudo systemctl enable --now docker",
 
-      # jenkins install error
-      
-      # "sudo apt-get install -y gnupg2", # gnupg2 설치
-      # "curl -fsSL https://pkg.jenkins.io/debian/jenkins.io.key | sudo gpg --dearmor --yes -o /usr/share/keyrings/jenkins-archive-keyring.gpg",
-      # "echo 'deb [signed-by=/usr/share/keyrings/jenkins-archive-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/' | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null",
+      # jenkins container pull
+      "sudo docker pull jenkins/jenkins:latest",
+
+      # jenkins container Run
+      "sudo docker run -d -p 8080:8080 -p 50000:50000 --name jenkins_container jenkins/jenkins:latest",
+
+      # jenkins install
+
+      # "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null",
+      # "echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null",
       # "sudo apt-get update",
       # "sudo apt-get install -y fontconfig openjdk-11-jre",
       # "sudo apt-get install -y jenkins"
@@ -98,28 +105,33 @@ resource "aws_instance" "ec2_instance_master" {
 
 # EC2 노드1 인스턴스 생성
 resource "aws_instance" "ec2_instance_node1" {
-  ami           = "ami-0c9c942bd7bf113a2" # ubuntu 22.04 ami
-  instance_type = "t3.medium"
-  key_name      = "Kubectl" # 사용하는 키 페어 이름으로 대체
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name # aws에서 발급 받은 pem key name
   subnet_id     = aws_subnet.kubernetes_subnet.id
   vpc_security_group_ids = [aws_security_group.kubernetes_security_group.id]
-  associate_public_ip_address = true # 퍼블릭 IP를 할당
+  associate_public_ip_address = true
 
   tags = {
     Name = "k8s-node1"
   }
 
-  # ec2 인스턴스 생성 후 ssh 자동 접속
   connection {
     type        = "ssh"
-    user        = "ubuntu" # 원격 인스턴스의 사용자 이름 (예: Ubuntu AMI를 사용하는 경우)
-    private_key = file("/Users/donghyeonshin/Desktop/pem_key/Kubectl.pem") # AWS에서 발급한 PEM 키 파일의 경로
-    host        = self.public_ip # 인스턴스가 생성된 후에 퍼블릭 IP 주소로 자동으로 채워집니다.
+    user        = "ubuntu"
+    private_key = file(var.public_key_path) # aws에서 발급 받은 pem key 저장 디렉토리
+    host        = self.public_ip
   }
 
-  # docker auto install 
   provisioner "remote-exec" {
     inline = [
+      # Local time
+      # "sudo -i",
+      "sudo rm -f /etc/localtime",
+      "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
+      # "exit",
+
+      # docker install
       "sudo apt-get update",
       "sudo apt-get install -y docker.io",
       "sudo systemctl enable --now docker"
@@ -127,34 +139,102 @@ resource "aws_instance" "ec2_instance_node1" {
   }
 }
 
-
 # EC2 노드2 인스턴스 생성
 resource "aws_instance" "ec2_instance_node2" {
-  ami           = "ami-0c9c942bd7bf113a2" # ubuntu 22.04 ami
-  instance_type = "t3.medium"
-  key_name      = "Kubectl" # 사용하는 키 페어 이름으로 대체
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name # aws에서 발급 받은 pem key name
   subnet_id     = aws_subnet.kubernetes_subnet.id
   vpc_security_group_ids = [aws_security_group.kubernetes_security_group.id]
-  associate_public_ip_address = true # 퍼블릭 IP를 할당
+  associate_public_ip_address = true
 
   tags = {
     Name = "k8s-node2"
   }
 
-  # ec2 인스턴스 생성 후 ssh 자동 접속
   connection {
     type        = "ssh"
-    user        = "ubuntu" # 원격 인스턴스의 사용자 이름 (예: Ubuntu AMI를 사용하는 경우)
-    private_key = file("/Users/donghyeonshin/Desktop/pem_key/Kubectl.pem") # AWS에서 발급한 PEM 키 파일의 경로
-    host        = self.public_ip # 인스턴스가 생성된 후에 퍼블릭 IP 주소로 자동으로 채워집니다.
+    user        = "ubuntu"
+    private_key = file(var.public_key_path) # aws에서 발급 받은 pem key 저장 디렉토리
+    host        = self.public_ip
   }
 
-  # docker auto install 
   provisioner "remote-exec" {
     inline = [
+
+      # Local time
+      # "sudo -i",
+      "sudo rm -f /etc/localtime",
+      "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
+      # "exit",
+
+      # docker install
       "sudo apt-get update",
       "sudo apt-get install -y docker.io",
       "sudo systemctl enable --now docker"
     ]
   }
 }
+
+  # 테스트 코드 
+
+# # IAM 사용자 생성
+# resource "aws_iam_user" "jenkins_docker_user" {
+#   name = "jenkins-docker-user" # 사용자 이름 설정
+# }
+
+# # IAM 정책 생성
+# resource "aws_iam_policy" "jenkins_docker_policy" {
+#   name        = "jenkins-docker-policy"
+#   description = "Policy for Jenkins and Docker EC2 access"
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Effect   = "Allow"
+#         Action   = "ec2:DescribeInstances"
+#         Resource = [
+#           aws_instance.ec2_instance_master.arn,
+#           aws_instance.ec2_instance_node1.arn,
+#           aws_instance.ec2_instance_node2.arn,
+#         ]
+#       },
+#       {
+#         Effect   = "Allow"
+#         Action   = "ec2:StartInstances"
+#         Resource = [
+#           aws_instance.ec2_instance_master.arn,
+#           aws_instance.ec2_instance_node1.arn,
+#           aws_instance.ec2_instance_node2.arn,
+#         ]
+#       }
+#           # instance 중지 정책
+#       # {
+#       #   Effect   = "Allow"
+#       #   Action   = "ec2:StopInstances"
+#       #   Resource = [
+#       #     aws_instance.ec2_instance_master.arn,
+#       #     aws_instance.ec2_instance_node1.arn,
+#       #     aws_instance.ec2_instance_node2.arn,
+#       #   ]
+#       # },
+#           # instance 재부팅 정책
+#       # {
+#       #   Effect   = "Allow"
+#       #   Action   = "ec2:RebootInstances"
+#       #   Resource = [
+#       #     aws_instance.ec2_instance_master.arn,
+#       #     aws_instance.ec2_instance_node1.arn,
+#       #     aws_instance.ec2_instance_node2.arn,
+#       #   ]
+#       # }
+#     ]
+#   })
+# }
+
+# # IAM 정책과 사용자 연결
+# resource "aws_iam_user_policy_attachment" "jenkins_docker_policy_attachment" {
+#   policy_arn = aws_iam_policy.jenkins_docker_policy.arn
+#   user       = aws_iam_user.jenkins_docker_user.name
+# }
