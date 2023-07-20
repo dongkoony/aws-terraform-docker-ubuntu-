@@ -17,8 +17,17 @@ aws --version
 
 ## AWS Configuration
 ```
-// AWS Public Key, Private Key 구성
+// AWS Access Key, Private Key 구성
 aws configure
+
+// 설정
+AWS Access Key ID [None] :
+AWS Secret Access Key [None] :
+Default region name [None] : ap-northeast-2(서울)
+Default output format [None] : json
+
+// 등록 확인
+aws configure list
 ```
 
 ## Terraform install (Ubuntu)
