@@ -2,13 +2,13 @@
 
 ## AWS CLI Install
 ### Linux Install
-```
+``` bash
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 ```
 ### Windows Install
-```
+``` bash
 msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
 
 // 설치 후 버전 확인
@@ -16,7 +16,7 @@ aws --version
 ```
 
 ## AWS Configuration
-```
+``` bash
 // AWS Access Key, Private Key 구성
 aws configure
 
