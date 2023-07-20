@@ -26,7 +26,7 @@ aws --version
 
 ## AWS Configuration
 ``` bash
-// AWS Access Key, Private Key 구성
+// AWS Access Key, Secret Key 구성
 aws configure
 
 // 설정 AWS IAM 액세스 key
