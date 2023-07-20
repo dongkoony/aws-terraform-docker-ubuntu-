@@ -32,7 +32,7 @@ variable "subnet_cidr_block" {
 
 variable "availability_zone" {
   type    = string
-  default = "ap-northeast-2a"
+  default = "ap-northeast-2a" # 가용 영역
 }
 
 variable "ami_id" {
