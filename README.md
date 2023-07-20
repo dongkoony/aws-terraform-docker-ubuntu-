@@ -28,6 +28,9 @@ Default output format [None] : json
 
 // 등록 확인
 aws configure list
+
+// 여러 AWS 계정과 아이디로 운용할 경우
+aws configure --profile [원하는 이름]
 ```
 
 ## Terraform install (Ubuntu)
@@ -37,9 +40,17 @@ echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://
 sudo apt update && sudo apt install terraform
 ```
 
-## Terraform Start
+## Terraform
 ``` Hcl
+// AWS 서비스 실행
 $ terraform init
 $ terraform plan
 $ terraform apply
+...
+Enter a value: yes
+
+// AWS 서비스 삭제
+$ terraform destroy
+...
+Enter a value: yes
 ```
