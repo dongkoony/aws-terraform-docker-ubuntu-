@@ -27,7 +27,7 @@ aws --version
 // AWS Access Key, Private Key 구성
 aws configure
 
-// 설정
+// 설정 AWS IAM 액세스 key
 AWS Access Key ID [None] :
 AWS Secret Access Key [None] :
 Default region name [None] : ap-northeast-2(서울)
