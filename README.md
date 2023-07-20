@@ -1,5 +1,12 @@
 # AWS-Terraform-Docker-install
 
+## Terraform을 이용한 AWS EC2 서비스 내 도커 설치
+```
+Terraform version : 1.5.0
+aws-cli version : 2.12.3
+python version : 3.11.4
+```
+
 ## AWS CLI Install
 ### Linux Install
 ``` bash
