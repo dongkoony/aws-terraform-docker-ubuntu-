@@ -1,12 +1,12 @@
 # AWS-Terraform-Docker-install
 
-## 현재 진행 상황 (23. 07. 20)
+## 현재 진행 상황 (23. 07. 25)
 ```
 1. Terraform apply시 AWS EC2인프라 구축
 2. 구축 완료시 3개의 EC2 Localtime Seoul로 자동 변경
-3. 3개 EC2에 도커 설치
-4. Master EC2에 젠킨스 컨테이너 Pull
-5. Public IP:8080 접속 시 젠킨스 접속 가능
+3. 3개 EC2에 도커 바이너리를  사용하여 설치
+4. 내부 통신망만 사용가능한  AWS 인프라 구축
+5. provisioner "file"을 사용하여 Local->EC2 원격으로 Docker binary 전송
 ```
 
 ## Terraform을 이용한 AWS EC2 서비스 내 도커 및 젠킨스 컨테이너 Pull IaC
