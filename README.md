@@ -8,6 +8,10 @@
 4. 내부 통신망만 사용가능한  AWS 인프라 구축
 5. provisioner "file"을 사용하여 Local->EC2 원격으로 Docker binary 전송
 ```
+## Docker Binary Download
+``` html
+https://download.docker.com/linux/static/stable/x86_64/
+```
 
 ## Terraform을 이용한 AWS EC2 서비스 내 도커 및 젠킨스 컨테이너 Pull IaC
 ```
