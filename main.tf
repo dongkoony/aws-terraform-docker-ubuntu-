@@ -8,40 +8,20 @@ resource "aws_security_group" "kubernetes_security_group" {
   name_prefix = "kubernetes-security-group"
   vpc_id      = var.vpc_id
 
-  # SSH, 도커 포트, 쿠버네티스 포트, 젠킨스 포트 허용
+  # SSH 포트
   ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    cidr_blocks = [var.cidr_blocks, "${var.your_machine_ip}/32"]
   }
-
-  ingress {
-    from_port   = 2375
-    to_port     = 2375
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.cidr_blocks, "${var.your_machine_ip}/32"]
   }
 }
 
@@ -72,25 +52,37 @@ resource "aws_instance" "ec2_instance_master" {
     host        = self.public_ip
   }
 
+
+  provisioner "file" {
+    source = var.docker_source_path
+    destination = var.docker_dest_path
+  }
+
+
   provisioner "remote-exec" {
     inline = [
       # Local time
       # "sudo -i",
-      "sudo rm -f /etc/localtime",
+      "sudo rm /etc/localtime",
       "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
       # "exit",
       
       # docker install
-      
-      "sudo apt-get update",
-      "sudo apt-get install -y docker.io",
+      # Copy Docker binary
+      "sudo mv /home/ubuntu/docker-23.0.0.tgz /usr/local/bin/",
+      "sudo tar -xvzf /usr/local/bin/docker-23.0.0.tgz --directory /usr/local/bin/ --strip-components=1",
+      "sudo chmod +x /usr/local/bin/docker",
       "sudo systemctl enable --now docker",
+      # Remove Docker tarball
+      "sudo rm /usr/local/bin/docker-23.0.0.tgz"
+      
+      
 
       # jenkins container pull
-      "sudo docker pull jenkins/jenkins:latest",
+      # "sudo docker pull jenkins/jenkins:latest",
 
       # jenkins container Run
-      "sudo docker run -d -p 8080:8080 -p 50000:50000 --name jenkins_container jenkins/jenkins:latest",
+      # "sudo docker run -d -p 8080:8080 -p 50000:50000 --name jenkins_container jenkins/jenkins:latest",
 
       # jenkins install
 
@@ -123,18 +115,28 @@ resource "aws_instance" "ec2_instance_node1" {
     host        = self.public_ip
   }
 
+  provisioner "file" {
+    source = var.docker_source_path
+    destination = var.docker_dest_path
+  }
+
+
   provisioner "remote-exec" {
     inline = [
       # Local time
       # "sudo -i",
-      "sudo rm -f /etc/localtime",
+      "sudo rm /etc/localtime",
       "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
       # "exit",
-
+      
       # docker install
-      "sudo apt-get update",
-      "sudo apt-get install -y docker.io",
-      "sudo systemctl enable --now docker"
+      # Copy Docker binary
+      "sudo mv /home/ubuntu/docker-23.0.0.tgz /usr/local/bin/",
+      "sudo tar -xvzf /usr/local/bin/docker-23.0.0.tgz --directory /usr/local/bin/ --strip-components=1",
+      "sudo chmod +x /usr/local/bin/docker",
+      "sudo systemctl enable --now docker",
+      # Remove Docker tarball
+      "sudo rm /usr/local/bin/docker-23.0.0.tgz"
     ]
   }
 }
@@ -159,19 +161,29 @@ resource "aws_instance" "ec2_instance_node2" {
     host        = self.public_ip
   }
 
+  provisioner "file" {
+    source = var.docker_source_path
+    destination = var.docker_dest_path
+  }
+
   provisioner "remote-exec" {
     inline = [
 
       # Local time
       # "sudo -i",
-      "sudo rm -f /etc/localtime",
+      "sudo rm /etc/localtime",
       "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
       # "exit",
-
+      
       # docker install
-      "sudo apt-get update",
-      "sudo apt-get install -y docker.io",
-      "sudo systemctl enable --now docker"
+      # Copy Docker binary
+      "sudo mv /home/ubuntu/docker-23.0.0.tgz /usr/local/bin/",
+      "sudo tar -xvzf /usr/local/bin/docker-23.0.0.tgz --directory /usr/local/bin/ --strip-components=1",
+      "sudo chmod +x /usr/local/bin/docker",
+      "sudo systemctl enable --now docker",
+      # Remove Docker tarball
+      "sudo rm /usr/local/bin/docker-23.0.0.tgz"
+      
     ]
   }
 }

@@ -13,7 +13,19 @@ variable "instance_type" {
 variable "vpc_id" {
   type    = string
   default = "vpc-0d34cb0a905197a86"
+  
 }
+
+# variable "cidr_blocks" {
+#   description = "CIDR blocks for the security group"
+#   default     = "172.31.64.0/20"
+# }
+
+# variable "your_machine_ip" {
+#   description = "The IP address of your machine"
+#   default     = "10.32.100.45"
+# }
+
 
 variable "key_name" { 
   type    = string
@@ -40,3 +52,22 @@ variable "ami_id" {
   default = "ami-0c9c942bd7bf113a2" # ubuntu 22.04
 }
 
+variable "docker_source_path" {
+  description = "Local Docker Binary 경로"
+  default     = "/Users/donghyeonshin/Desktop/docker-23.0.0.tgz"
+}
+
+variable "docker_dest_path" {
+  description = "로컬에서 EC2 대상 경로"
+  default     = "/home/ubuntu/docker-23.0.0.tgz"
+}
+
+variable "your_machine_ip" {
+  description = "The IP address of your machine"
+  default     = "116.126.103.194"
+}
+
+variable "cidr_blocks" {
+  description = "The CIDR blocks for internal communication"
+  default     = "172.31.64.0/20"
+}
