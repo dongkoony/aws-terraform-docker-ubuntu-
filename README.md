@@ -1,4 +1,4 @@
-# AWS-Terraform-Docker-install
+# AWS-Terraform-Docker-Binary-install
 
 ## 현재 진행 상황 (23. 07. 25)
 ```
