@@ -1,4 +1,4 @@
-# AWS Provider 설정 
+# AWS Provider 설정
 provider "aws" {
   region = var.region
 }
@@ -8,20 +8,19 @@ resource "aws_security_group" "kubernetes_security_group" {
   name_prefix = "kubernetes-security-group"
   vpc_id      = var.vpc_id
 
-  # SSH 포트
+  # SSH Port 내부 통신을 위한 CIDR BLOCK IP 수정
   ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = [var.cidr_blocks, "${var.your_machine_ip}/32"]
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["172.31.64.0/20"]
   }
-  
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [var.cidr_blocks, "${var.your_machine_ip}/32"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -30,6 +29,13 @@ resource "aws_subnet" "kubernetes_subnet" {
   vpc_id            = var.vpc_id
   cidr_block        = var.subnet_cidr_block
   availability_zone = var.availability_zone
+}
+
+# 원격 호스트에 도커 바이너리 복사
+resource "null_resource" "copy_docker_binary" {
+  provisioner "local-exec" {
+    command = "scp ${data.http.docker_binary.body} ${var.remote_username}@${var.remote_host}:/path/to/destination/docker"
+  }
 }
 
 # EC2 마스터 인스턴스 생성
@@ -42,7 +48,7 @@ resource "aws_instance" "ec2_instance_master" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "k8s-master"
+    Name = "master-ec2"
   }
 
   connection {
@@ -52,46 +58,8 @@ resource "aws_instance" "ec2_instance_master" {
     host        = self.public_ip
   }
 
-
-  provisioner "file" {
-    source = var.docker_source_path
-    destination = var.docker_dest_path
-  }
-
-
-  provisioner "remote-exec" {
-    inline = [
-      # Local time
-      # "sudo -i",
-      "sudo rm /etc/localtime",
-      "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
-      # "exit",
-      
-      # docker install
-      # Copy Docker binary
-      "sudo mv /home/ubuntu/docker-23.0.0.tgz /usr/local/bin/",
-      "sudo tar -xvzf /usr/local/bin/docker-23.0.0.tgz --directory /usr/local/bin/ --strip-components=1",
-      "sudo chmod +x /usr/local/bin/docker",
-      "sudo systemctl enable --now docker",
-      # Remove Docker tarball
-      "sudo rm /usr/local/bin/docker-23.0.0.tgz"
-      
-      
-
-      # jenkins container pull
-      # "sudo docker pull jenkins/jenkins:latest",
-
-      # jenkins container Run
-      # "sudo docker run -d -p 8080:8080 -p 50000:50000 --name jenkins_container jenkins/jenkins:latest",
-
-      # jenkins install
-
-      # "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null",
-      # "echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null",
-      # "sudo apt-get update",
-      # "sudo apt-get install -y fontconfig openjdk-11-jre",
-      # "sudo apt-get install -y jenkins"
-    ]
+  provisioner "local-exec" {
+    command     = "sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime"
   }
 }
 
@@ -105,7 +73,7 @@ resource "aws_instance" "ec2_instance_node1" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "k8s-node1"
+    Name = "node1-ec2"
   }
 
   connection {
@@ -115,29 +83,8 @@ resource "aws_instance" "ec2_instance_node1" {
     host        = self.public_ip
   }
 
-  provisioner "file" {
-    source = var.docker_source_path
-    destination = var.docker_dest_path
-  }
-
-
-  provisioner "remote-exec" {
-    inline = [
-      # Local time
-      # "sudo -i",
-      "sudo rm /etc/localtime",
-      "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
-      # "exit",
-      
-      # docker install
-      # Copy Docker binary
-      "sudo mv /home/ubuntu/docker-23.0.0.tgz /usr/local/bin/",
-      "sudo tar -xvzf /usr/local/bin/docker-23.0.0.tgz --directory /usr/local/bin/ --strip-components=1",
-      "sudo chmod +x /usr/local/bin/docker",
-      "sudo systemctl enable --now docker",
-      # Remove Docker tarball
-      "sudo rm /usr/local/bin/docker-23.0.0.tgz"
-    ]
+  provisioner "local-exec" {
+    command     = "sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime"
   }
 }
 
@@ -151,7 +98,7 @@ resource "aws_instance" "ec2_instance_node2" {
   associate_public_ip_address = true
 
   tags = {
-    Name = "k8s-node2"
+    Name = "node2-ec2"
   }
 
   connection {
@@ -161,92 +108,28 @@ resource "aws_instance" "ec2_instance_node2" {
     host        = self.public_ip
   }
 
-  provisioner "file" {
-    source = var.docker_source_path
-    destination = var.docker_dest_path
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-
-      # Local time
-      # "sudo -i",
-      "sudo rm /etc/localtime",
-      "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
-      # "exit",
-      
-      # docker install
-      # Copy Docker binary
-      "sudo mv /home/ubuntu/docker-23.0.0.tgz /usr/local/bin/",
-      "sudo tar -xvzf /usr/local/bin/docker-23.0.0.tgz --directory /usr/local/bin/ --strip-components=1",
-      "sudo chmod +x /usr/local/bin/docker",
-      "sudo systemctl enable --now docker",
-      # Remove Docker tarball
-      "sudo rm /usr/local/bin/docker-23.0.0.tgz"
-      
-    ]
+  provisioner "local-exec" {
+    command     = "sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime"
   }
 }
 
-  # 테스트 코드 
+# Docker 바이너리 복사 및 설치 수행을 원격 호스트에 연결
+resource "null_resource" "docker_installation" {
+  depends_on = [
+    null_resource.copy_docker_binary,
+    aws_instance.ec2_instance_master,
+    aws_instance.ec2_instance_node1,
+    aws_instance.ec2_instance_node2
+  ]
 
-# # IAM 사용자 생성
-# resource "aws_iam_user" "jenkins_docker_user" {
-#   name = "jenkins-docker-user" # 사용자 이름 설정
-# }
-
-# # IAM 정책 생성
-# resource "aws_iam_policy" "jenkins_docker_policy" {
-#   name        = "jenkins-docker-policy"
-#   description = "Policy for Jenkins and Docker EC2 access"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect   = "Allow"
-#         Action   = "ec2:DescribeInstances"
-#         Resource = [
-#           aws_instance.ec2_instance_master.arn,
-#           aws_instance.ec2_instance_node1.arn,
-#           aws_instance.ec2_instance_node2.arn,
-#         ]
-#       },
-#       {
-#         Effect   = "Allow"
-#         Action   = "ec2:StartInstances"
-#         Resource = [
-#           aws_instance.ec2_instance_master.arn,
-#           aws_instance.ec2_instance_node1.arn,
-#           aws_instance.ec2_instance_node2.arn,
-#         ]
-#       }
-#           # instance 중지 정책
-#       # {
-#       #   Effect   = "Allow"
-#       #   Action   = "ec2:StopInstances"
-#       #   Resource = [
-#       #     aws_instance.ec2_instance_master.arn,
-#       #     aws_instance.ec2_instance_node1.arn,
-#       #     aws_instance.ec2_instance_node2.arn,
-#       #   ]
-#       # },
-#           # instance 재부팅 정책
-#       # {
-#       #   Effect   = "Allow"
-#       #   Action   = "ec2:RebootInstances"
-#       #   Resource = [
-#       #     aws_instance.ec2_instance_master.arn,
-#       #     aws_instance.ec2_instance_node1.arn,
-#       #     aws_instance.ec2_instance_node2.arn,
-#       #   ]
-#       # }
-#     ]
-#   })
-# }
-
-# # IAM 정책과 사용자 연결
-# resource "aws_iam_user_policy_attachment" "jenkins_docker_policy_attachment" {
-#   policy_arn = aws_iam_policy.jenkins_docker_policy.arn
-#   user       = aws_iam_user.jenkins_docker_user.name
-# }
+  provisioner "remote-exec" {
+    inline = [
+      # 복사한 파일 압축 해제
+      "sudo tar xzvf /path/to/destination/docker -C /docker/",
+      # 압축 해제한 파일을 /usr/bin으로 이동
+      "sudo cp /docker/* /usr/bin/",
+      # Dockerd 실행
+      "sudo dockerd &"
+    ]
+  }
+}
