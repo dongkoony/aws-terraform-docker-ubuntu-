@@ -1,7 +1,6 @@
 variable "region" {
   type    = string
   default = "ap-northeast-2" # 서울 리전
-  
 }
 
 variable "instance_type" {
@@ -9,23 +8,10 @@ variable "instance_type" {
   default = "t3.medium"
 }
 
-
 variable "vpc_id" {
   type    = string
   default = "vpc-0d34cb0a905197a86"
-  
 }
-
-# variable "cidr_blocks" {
-#   description = "CIDR blocks for the security group"
-#   default     = "172.31.64.0/20"
-# }
-
-# variable "your_machine_ip" {
-#   description = "The IP address of your machine"
-#   default     = "10.32.100.45"
-# }
-
 
 variable "key_name" { 
   type    = string
@@ -44,7 +30,7 @@ variable "subnet_cidr_block" {
 
 variable "availability_zone" {
   type    = string
-  default = "ap-northeast-2a" # 가용 영역
+  default = "ap-northeast-2a"
 }
 
 variable "ami_id" {
@@ -52,22 +38,25 @@ variable "ami_id" {
   default = "ami-0c9c942bd7bf113a2" # ubuntu 22.04
 }
 
-variable "docker_source_path" {
-  description = "Local Docker Binary 경로"
-  default     = "/Users/donghyeonshin/Desktop/docker-23.0.0.tgz"
+# docker_binary_url docker 20.10.7 version
+variable "docker_binary_url" {
+  default = "wget https://download.docker.com/linux/static/stable/x86_64/docker-20.10.7.tgz"
 }
 
-variable "docker_dest_path" {
-  description = "로컬에서 EC2 대상 경로"
-  default     = "/home/ubuntu/docker-23.0.0.tgz"
+variable "remote_host" {
+  default = "192.168.1.100"
 }
 
-variable "your_machine_ip" {
-  description = "The IP address of your machine"
-  default     = "116.126.103.194"
+variable "remote_username" {
+  default = "shin_donghyeon" # 사용자 이름으로 변경
 }
 
-variable "cidr_blocks" {
-  description = "The CIDR blocks for internal communication"
-  default     = "172.31.64.0/20"
+# 도커 바이너리 다운로드
+data "http" "docker_binary" {
+  url = var.docker_binary_url
+}
+
+variable "local_docker_binary_path" {
+  type    = string
+  default = "/path/to/local/docker.tgz"
 }
