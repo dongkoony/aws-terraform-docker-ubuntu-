@@ -7,7 +7,13 @@
 3. 3개 EC2에 도커 바이너리를  사용하여 설치
 4. 내부 통신망만 사용가능한  AWS 인프라 구축
 5. provisioner "file"을 사용하여 Local->EC2 원격으로 Docker binary 전송
+
 ```
+## ifconfig
+```
+ifconfig.me
+``` 
+
 ## Docker Binary Download
 ``` html
 https://download.docker.com/linux/static/stable/x86_64/
