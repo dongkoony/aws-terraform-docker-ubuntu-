@@ -20,3 +20,4 @@ output "node2_instance_ip" {
 # output "iam_access_key" {
 #   value = aws_iam_user.example_user.access_key
 # }
+
