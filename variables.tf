@@ -67,8 +67,13 @@ variable "docker_dest_path" {
   default     = "/home/ubuntu/docker-23.0.0.tgz"
 }
 
+variable "docker_service_unit_file_add" {
+  description = "docker 유닛 파일 생성"
+  default     = "/etc/systemd/system/docker.service"
+}
+
 variable "your_machine_ip" {
-  description = "The IP address of your machine"
+  description = "내부 통신 IP"
   default     = "59.18.140.252"
 }
 
