@@ -81,24 +81,22 @@ resource "aws_instance" "ec2_instance_master" {
       "sudo tar -xvzf ${var.docker_binary_path} --directory /usr/local/bin/ --strip-components=1",
       "sudo chmod +x /usr/local/bin/docker",
       "sudo docker &",
+
       # Remove Docker tarball
-      "sudo rm ${var.docker_binary_path}"
+      "sudo rm ${var.docker_binary_path}",
       
-      
-
-      # jenkins container pull
-      # "sudo docker pull jenkins/jenkins:latest",
-
-      # jenkins container Run
-      # "sudo docker run -d -p 8080:8080 -p 50000:50000 --name jenkins_container jenkins/jenkins:latest",
-
-      # jenkins install
-
-      # "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null",
-      # "echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null",
-      # "sudo apt-get update",
-      # "sudo apt-get install -y fontconfig openjdk-11-jre",
-      # "sudo apt-get install -y jenkins"
+      #  Docker 서비스 유닛 파일을 생성
+      "echo '[Unit]' | sudo tee ${var.docker_service_unit_file_add}",
+      "echo 'Description=Docker Daemon' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'After=network.target' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '[Service]' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'ExecStart=/usr/local/bin/dockerd -H unix://' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '[Install]' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'WantedBy=multi-user.target' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable --now docker"
     ]
   }
 }
@@ -144,7 +142,22 @@ resource "aws_instance" "ec2_instance_node1" {
       "sudo chmod +x /usr/local/bin/docker",
       "sudo docker &",
       # Remove Docker tarball
-      "sudo rm ${var.docker_binary_path}"
+      "sudo rm ${var.docker_binary_path}",
+
+
+      #  Docker 서비스 유닛 파일을 생성
+      "echo '[Unit]' | sudo tee ${var.docker_service_unit_file_add}",
+      "echo 'Description=Docker Daemon' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'After=network.target' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '[Service]' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'ExecStart=/usr/local/bin/dockerd -H unix://' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '[Install]' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'WantedBy=multi-user.target' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable --now docker"
     ]
   }
 }
@@ -190,8 +203,21 @@ resource "aws_instance" "ec2_instance_node2" {
       "sudo chmod +x /usr/local/bin/docker",
       "sudo docker &",
       # Remove Docker tarball
-      "sudo rm ${var.docker_binary_path}"
-      
+      "sudo rm ${var.docker_binary_path}",
+
+      #  Docker 서비스 유닛 파일을 생성
+      "echo '[Unit]' | sudo tee ${var.docker_service_unit_file_add}",
+      "echo 'Description=Docker Daemon' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'After=network.target' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '[Service]' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'ExecStart=/usr/local/bin/dockerd -H unix://' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo '[Install]' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "echo 'WantedBy=multi-user.target' | sudo tee -a ${var.docker_service_unit_file_add}",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable --now docker"
     ]
   }
 }
