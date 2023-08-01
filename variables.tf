@@ -9,23 +9,11 @@ variable "instance_type" {
   default = "t3.medium"
 }
 
-
 variable "vpc_id" {
   type    = string
   default = "vpc-0d34cb0a905197a86"
   
 }
-
-# variable "cidr_blocks" {
-#   description = "CIDR blocks for the security group"
-#   default     = "172.31.64.0/20"
-# }
-
-# variable "your_machine_ip" {
-#   description = "The IP address of your machine"
-#   default     = "10.32.100.45"
-# }
-
 
 variable "key_name" { 
   type    = string

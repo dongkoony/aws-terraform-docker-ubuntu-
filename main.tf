@@ -16,15 +16,6 @@ resource "aws_security_group" "kubernetes_security_group" {
     cidr_blocks = [var.cidr_blocks, "${var.your_machine_ip}/32"]
   }
 
-  # jenkins 포트
-  ingress {
-    from_port = 8080
-    to_port = 8080
-    protocol = "tcp"
-    cidr_blocks = [var.cidr_blocks, "${var.your_machine_ip}/32"]
-  }
-  
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -70,10 +61,8 @@ resource "aws_instance" "ec2_instance_master" {
   provisioner "remote-exec" {
     inline = [
       # Local time
-      # "sudo -i",
       "sudo rm /etc/localtime",
       "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
-      # "exit",
       
       # docker install
       # Copy Docker binary
@@ -130,20 +119,17 @@ resource "aws_instance" "ec2_instance_node1" {
   provisioner "remote-exec" {
     inline = [
       # Local time
-      # "sudo -i",
       "sudo rm /etc/localtime",
       "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
-      # "exit",
       
       # docker install
       # Copy Docker binary
       "sudo mv ${var.docker_dest_path} /usr/local/bin/",
       "sudo tar -xvzf ${var.docker_binary_path} --directory /usr/local/bin/ --strip-components=1",
       "sudo chmod +x /usr/local/bin/docker",
-      "sudo docker &",
+
       # Remove Docker tarball
       "sudo rm ${var.docker_binary_path}",
-
 
       #  Docker 서비스 유닛 파일을 생성
       "echo '[Unit]' | sudo tee ${var.docker_service_unit_file_add}",
@@ -155,7 +141,6 @@ resource "aws_instance" "ec2_instance_node1" {
       "echo '' | sudo tee -a ${var.docker_service_unit_file_add}",
       "echo '[Install]' | sudo tee -a ${var.docker_service_unit_file_add}",
       "echo 'WantedBy=multi-user.target' | sudo tee -a ${var.docker_service_unit_file_add}",
-      "sudo systemctl daemon-reload",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable --now docker"
     ]
@@ -191,17 +176,15 @@ resource "aws_instance" "ec2_instance_node2" {
     inline = [
 
       # Local time
-      # "sudo -i",
       "sudo rm /etc/localtime",
       "sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime",
-      # "exit",
       
       # docker install
       # Copy Docker binary
       "sudo mv ${var.docker_dest_path} /usr/local/bin/",
       "sudo tar -xvzf ${var.docker_binary_path} --directory /usr/local/bin/ --strip-components=1",
       "sudo chmod +x /usr/local/bin/docker",
-      "sudo docker &",
+
       # Remove Docker tarball
       "sudo rm ${var.docker_binary_path}",
 
@@ -216,71 +199,7 @@ resource "aws_instance" "ec2_instance_node2" {
       "echo '[Install]' | sudo tee -a ${var.docker_service_unit_file_add}",
       "echo 'WantedBy=multi-user.target' | sudo tee -a ${var.docker_service_unit_file_add}",
       "sudo systemctl daemon-reload",
-      "sudo systemctl daemon-reload",
       "sudo systemctl enable --now docker"
     ]
   }
 }
-
-  # 테스트 코드 
-
-# # IAM 사용자 생성
-# resource "aws_iam_user" "jenkins_docker_user" {
-#   name = "jenkins-docker-user" # 사용자 이름 설정
-# }
-
-# # IAM 정책 생성
-# resource "aws_iam_policy" "jenkins_docker_policy" {
-#   name        = "jenkins-docker-policy"
-#   description = "Policy for Jenkins and Docker EC2 access"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect   = "Allow"
-#         Action   = "ec2:DescribeInstances"
-#         Resource = [
-#           aws_instance.ec2_instance_master.arn,
-#           aws_instance.ec2_instance_node1.arn,
-#           aws_instance.ec2_instance_node2.arn,
-#         ]
-#       },
-#       {
-#         Effect   = "Allow"
-#         Action   = "ec2:StartInstances"
-#         Resource = [
-#           aws_instance.ec2_instance_master.arn,
-#           aws_instance.ec2_instance_node1.arn,
-#           aws_instance.ec2_instance_node2.arn,
-#         ]
-#       }
-#           # instance 중지 정책
-#       # {
-#       #   Effect   = "Allow"
-#       #   Action   = "ec2:StopInstances"
-#       #   Resource = [
-#       #     aws_instance.ec2_instance_master.arn,
-#       #     aws_instance.ec2_instance_node1.arn,
-#       #     aws_instance.ec2_instance_node2.arn,
-#       #   ]
-#       # },
-#           # instance 재부팅 정책
-#       # {
-#       #   Effect   = "Allow"
-#       #   Action   = "ec2:RebootInstances"
-#       #   Resource = [
-#       #     aws_instance.ec2_instance_master.arn,
-#       #     aws_instance.ec2_instance_node1.arn,
-#       #     aws_instance.ec2_instance_node2.arn,
-#       #   ]
-#       # }
-#     ]
-#   })
-# }
-
-# # IAM 정책과 사용자 연결
-# resource "aws_iam_user_policy_attachment" "jenkins_docker_policy_attachment" {
-#   policy_arn = aws_iam_policy.jenkins_docker_policy.arn
-#   user       = aws_iam_user.jenkins_docker_user.name
-# }
