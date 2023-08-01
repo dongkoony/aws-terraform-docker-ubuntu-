@@ -69,7 +69,6 @@ resource "aws_instance" "ec2_instance_master" {
       "sudo mv ${var.docker_dest_path} /usr/local/bin/",
       "sudo tar -xvzf ${var.docker_binary_path} --directory /usr/local/bin/ --strip-components=1",
       "sudo chmod +x /usr/local/bin/docker",
-      "sudo docker &",
 
       # Remove Docker tarball
       "sudo rm ${var.docker_binary_path}",
