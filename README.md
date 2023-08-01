@@ -1,6 +1,6 @@
 # AWS-Terraform-Docker-Binary-install
 
-## 현재 진행 상황 (23. 07. 25)
+## 현 프로젝트의  목표
 ```
 1. Terraform apply시 AWS EC2인프라 구축
 2. 구축 완료시 3개의 EC2 Localtime Seoul로 자동 변경
