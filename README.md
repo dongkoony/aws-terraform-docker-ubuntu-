@@ -54,7 +54,7 @@ ifconfig.me
 https://download.docker.com/linux/static/stable/x86_64/
 ```
 
-### Terraform을 이용한 AWS EC2 서비스 내 도커 및 젠킨스 컨테이너 Pull IaC 현재 젠킨스 install 주석 처리
+### 기술 스택 및 버전
 ```
 Terraform version : 1.5.0
 aws-cli version : 2.12.3
