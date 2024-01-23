@@ -1,4 +1,5 @@
 # Secure-Cloud-Dock
+![SDC_Project_Logo](https://github.com/dongkoony/aws-terraform-docker-ubuntu-/assets/109497684/28409205-1e48-4ffb-923b-0c4264aebd4e)
 
 ## Secure-Cloud-Dock
 
