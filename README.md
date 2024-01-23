@@ -1,6 +1,6 @@
 # Secure-Cloud-Dock
 
-## Secure-Cloud=Dock
+## Secure-Cloud-Dock
 
 **Secure**: 프로젝트는 보안 인프라를 구축하고 AWS 클라우드 환경에서 안전한 운영을 중요하게 생각합니다.
 
