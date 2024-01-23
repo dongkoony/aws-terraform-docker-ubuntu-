@@ -37,8 +37,8 @@
 
 ### 이 저장소를 클론합니다.
    ```bash
-   git clone https://github.com/yourusername/your-repo.git
-   cd your-repo
+   git clone https://github.com/dongkoony/aws-terraform-docker-ubuntu-.git
+   cd aws-terraform-docker-ubuntu-
    ```
 
 ### ifconfig
